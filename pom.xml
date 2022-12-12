@@ -33,28 +33,21 @@
 				<configuration>
 					<classifier>mule-application</classifier>
 					<cloudHubDeployment>
-
-						<uri>https://anypoint.mulesoft.com/</uri>
-						
-						<muleVersion>${app.runtime}</muleVersion>
-						
+						<uri>https://anypoint.mulesoft.com</uri>
+						<muleVersion>${muleVersion}</muleVersion>
 						<username>${username}</username>
-						
 						<password>${password}</password>
-						
-						<applicationName>${project.artifactId}</applicationName>
-						
-						<environment>Sandbox</environment>
-						
+						<applicationName>${applicationName}</applicationName>
+						<environment>${environment}</environment>
+						<businessGroup>${businessGroup}</businessGroup>
 						<workerType>${workerType}</workerType>
-						
-						<workers>1</workers>
-						
 						<objectStoreV2>true</objectStoreV2>
-						
-						<region> ${region} </region>
-						
-						</cloudHubDeployment>
+						<properties>
+							<anypoint.platform.client_id>${anypoint.platform.client_id}</anypoint.platform.client_id>
+							<anypoint.platform.client_secret>${anypoint.platform.client_secret}</anypoint.platform.client_secret>
+							<env>${env}</env>
+						</properties>
+					</cloudHubDeployment>
 				</configuration>
 			</plugin>
 			<plugin>
