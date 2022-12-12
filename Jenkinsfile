@@ -1,11 +1,44 @@
 pipeline {
-  agent any
 
+  agent any
+  environment {
+    //adding a comment for the commit test
+    DEPLOY_CREDS = credentials('deploy-anypoint-user')
+    MULE_VERSION = '4.4.0'
+    BG = "<BUSINESS-GROUP>"
+    WORKER = "Micro"
+    M2SETTINGS = "C:\\Users\\workshop\\.m2\\settings.xml"
+  }
   stages {
-	stage('Build') {
-	  steps {
-			bat 'mvn clean package deploy -DskipMunitTests -DmuleDeploy -DmuleVersion="4.4.0" -Dusername="bhuvan-test" -Dpassword="Bhuvan1998" -DapplicationName="mobile-accounts-eapi"  -Denvironment="Sandbox" -DbusinessGroup="Test" -DworkerType=MICRO  -Danypoint.platform.client_id=336360e1569a4671a242e463b5731054 -Danypoint.platform.client_secret=7C5BA89B64Db439798EDFB88501F1264 -Denv="sandbox"'
-	  }
-	}
+    stage('Build') {
+      steps {
+            bat 'mvn -B -U -e -V clean -gs %M2SETTINGS% -DskipTests package'
+      }
+    }
+
+    stage('Test') {
+      steps {
+          bat "mvn test"
+      }
+    }
+
+     stage('Deploy Development') {
+      environment {
+        ENVIRONMENT = 'Sandbox'
+        APP_NAME = '<DEV-API-NAME>'
+      }
+      steps {
+            bat 'mvn -U -V -e -B -gs %M2SETTINGS% -DskipTests deploy -DmuleDeploy -Dmule.version="%MULE_VERSION%" -Danypoint.username="%DEPLOY_CREDS_USR%" -Danypoint.password="%DEPLOY_CREDS_PSW%" -Dcloudhub.app="%APP_NAME%" -Dcloudhub.environment="%ENVIRONMENT%" -Dcloudhub.bg="%BG%" -Dcloudhub.worker="%WORKER%"'
+      }
+    }
+    stage('Deploy Production') {
+      environment {
+        ENVIRONMENT = 'Production'
+        APP_NAME = '<PROD-API-NAME>'
+      }
+      steps {
+            bat 'mvn -U -V -e -B -gs %M2SETTINGS% -DskipTests deploy -DmuleDeploy -Dmule.version="%MULE_VERSION%" -Danypoint.username="%DEPLOY_CREDS_USR%" -Danypoint.password="%DEPLOY_CREDS_PSW%" -Dcloudhub.app="%APP_NAME%" -Dcloudhub.environment="%ENVIRONMENT%" -Dcloudhub.bg="%BG%" -Dcloudhub.worker="%WORKER%"'
+      }
+    }
   }
 }
