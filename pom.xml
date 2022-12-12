@@ -90,13 +90,6 @@
 			<classifier>mule-plugin</classifier>
 		</dependency>
 		<dependency>
-			<groupId>3d661517-1a7c-428a-a671-160ec2d12da9</groupId>
-			<artifactId>mobile-accounts-eapi</artifactId>
-			<version>1.0.5</version>
-			<classifier>raml</classifier>
-			<type>zip</type>
-		</dependency>
-		<dependency>
 			<groupId>org.mule.modules</groupId>
 			<artifactId>mule-apikit-module</artifactId>
 			<version>1.7.3</version>
