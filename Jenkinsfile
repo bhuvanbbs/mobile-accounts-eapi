@@ -1,50 +1,11 @@
-    pipeline {
+pipeline {
+  agent any
 
-    agent any
-
-    stages {
-
-    stage(‘Build Application’) {
-
-    steps {
-
-    bat ‘mvn clean install’
-
-    }
-
-    }
-
-    stage(‘Test’) {
-
-    steps {
-
-    echo ‘Application in Testing Phase…’
-
-    bat ‘mvn test’
-
-    }
-
-    }
-
-    stage(‘Deploy CloudHub’) {
-
-    environment {
-
-    ANYPOINT_CREDENTIALS = credentials(‘anypointPlatform’)
-
-    }
-
-    steps {
-
-    echo ‘Deploying mule project due to the latest code commit…’
-
-    echo ‘Deploying to the configured environment….’
-
-    bat ‘mvn package deploy -DmuleDeploy -Dusername=${ANYPOINT_CREDENTIALS_USR} -Dpassword=${ANYPOINT_CREDENTIALS_PSW} -DworkerType=Micro -Dworkers=1 -Dregion=us-west-2’
-
-    }
-
-    }
-
-    }
-    }
+  stages {
+	stage('Build') {
+	  steps {
+			bat 'mvn clean package deploy -DskipMunitTests -DmuleDeploy -DmuleVersion="4.4.0" -Dusername="bhuvan-test" -Dpassword="Test123" -DapplicationName="mobile-accounts-eapi"  -Denvironment="Sandbox" -DbusinessGroup="Test" -DworkerType=MICRO  -Danypoint.platform.client_id=51482e5b09ad476d96e2e11d116717ab -Danypoint.platform.client_secret=47333f4de3EB4117A3b653F30048F5E1 -Denv="sandbox"'
+	  }
+	}
+  }
+}
