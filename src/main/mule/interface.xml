@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+    <apikit:config name="mobile-accounts-eapi-config" api="resource::3d661517-1a7c-428a-a671-160ec2d12da9:mobile-accounts-eapi:1.0.5:raml:zip:mobile-accounts-eapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <flow name="mobile-accounts-eapi-main">
+        <http:listener path="/*" config-ref="accounts-papi-httpListenerConfig">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="mobile-accounts-eapi-config" doc:id="e972267d-317d-4755-8b1c-686eb7871256"/>
+    </flow>
+    <flow name="post:\accounts:application\json:mobile-accounts-eapi-config">
+                <ee:transform doc:name="SET CorrelationId" doc:id="ebee5489-d36c-4c4b-937d-bc2ddfa26e67">
+            <ee:variables>
+                <ee:set-variable variableName="cid"><![CDATA[correlationId]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <flow-ref doc:name="post-account-flow" doc:id="56cb4866-c8e1-4872-bd97-99646e03027e" name="post-account-flow"/>
+    </flow>
+    <flow name="get:\accounts\(accountId):mobile-accounts-eapi-config">
+        <ee:transform doc:name="SET AccountId" doc:id="5cfc7891-500d-40f8-872a-761a0250aed4">
+            <ee:variables>
+                <ee:set-variable variableName="accountId"><![CDATA[attributes.uriParams.'accountId']]></ee:set-variable>
+				<ee:set-variable variableName="cid" ><![CDATA[correlationId]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+		<flow-ref doc:name="get-account-flow" doc:id="1e6e41ec-63c4-4d8e-8acd-c00c38255f3d" name="get-account-flow" />
+    </flow>
+	<flow name="put:\accounts\(accountId):application\json:mobile-accounts-eapi-config">
+        <ee:transform doc:name="SET AccountId" doc:id="2e1956f9-04e8-4739-97ea-7660cbc53772">
+            <ee:variables>
+                <ee:set-variable variableName="accountId"><![CDATA[attributes.uriParams.'accountId']]></ee:set-variable>
+                <ee:set-variable variableName="cid"><![CDATA[attributes.headers.correlationId]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <flow-ref doc:name="put-account-flow" doc:id="ecdd3c90-aff3-4d5e-a4ab-67d3dc87cfbb" name="put-account-flow" />
+    </flow>
+	<flow name="delete:\accounts\(accountId):mobile-accounts-eapi-config">
+        <ee:transform doc:name="SET AccountId" doc:id="c9bc6f4d-a9d9-49c2-b006-61e7cc0922f2">
+            <ee:variables>
+                <ee:set-variable variableName="accountId"><![CDATA[attributes.uriParams.'accountId']]></ee:set-variable>
+                <ee:set-variable variableName="cid"><![CDATA[attributes.headers.correlationId]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <flow-ref doc:name="delete-account-flow" doc:id="024c2fb3-5868-430b-9209-5155cb386c2b" name="delete-account-flow" />
+    </flow>
+</mule>

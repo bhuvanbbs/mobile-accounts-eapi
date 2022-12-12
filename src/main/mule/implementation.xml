@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
+	<flow name="post-account-flow" doc:id="a1c3c8e7-2c7b-42dc-9e7c-4f10ae2d00d5" >
+		<http:request method="POST" doc:name="Accounts-Papi" doc:id="09703bfa-62ce-4712-9afd-4f7802ab7b1f" url="${http-request.accounts-papi}">
+			<reconnect />
+			<http:headers ><![CDATA[#[output application/json
+---
+{
+	"correlationId" : vars.cid,
+	"client_secret" : Mule::p('secure::app.client_secret'),
+	"client_id" : Mule::p('app.client_id')
+	
+}]]]></http:headers>
+		</http:request>
+		<ee:transform doc:name="Response" doc:id="b75a097c-c460-486d-9c66-b765887bcf1e">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	id: payload.id,
+	status: 0,
+	message: "Account created successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Log Response" doc:id="191a5e52-0308-4373-bb69-c3441cd1fb5a" message='#[payload]'/>
+	</flow>
+	<flow name="get-account-flow" doc:id="f1375371-1067-4799-8be5-2331e84e2c37" >
+<http:request method="GET" doc:name="Accounts-SFDC-Sapi" doc:id="a22c5e86-06ea-44d8-ba52-1e7f31a4081a" url="${http-request.accounts-sapi}/{accountId}">
+			<reconnect />
+			<http:headers ><![CDATA[#[output application/json
+---
+{
+	"correlationId" : vars.cid,
+	"client_secret" : Mule::p('secure::app.client_secret'),
+	"client_id" : Mule::p('app.client_id')
+	
+}]]]></http:headers>
+			<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	"accountId" : vars.accountId
+}]]]></http:uri-params>
+		</http:request>
+		<ee:transform doc:name="Response" doc:id="0dce2943-a2c9-450f-b1c3-8315225ccfb5" >
+			<ee:message >
+				<ee:set-payload resource="scripts/convert-payload-to-object.dwl" />
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="httpStatus" ><![CDATA[200]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Log Response" doc:id="4a4a9672-4f97-4eb4-b401-dc73a6c8a1c6" message='#[output application/json --- {"correleationId": vars.cid ,"message": "GET Method is successful"}]'/>
+	
+</flow>
+	<flow name="put-account-flow" doc:id="b76f9130-a616-4b59-a487-e04b212b79f5" >
+		<http:request method="PUT" doc:name="Accounts-Papi" doc:id="4da726e1-d5c8-4de9-b493-4c8f44065152" url="${http-request.accounts-papi}/{accountId}" correlationId="vars.cid">
+			<reconnect />
+			<http:headers><![CDATA[#[output application/json
+---
+{
+	"correlationId" : vars.cid,
+	"client_secret" : Mule::p('secure::app.client_secret'),
+	"client_id" : Mule::p('app.client_id')
+	
+}]]]></http:headers>
+			<http:uri-params><![CDATA[#[output application/java
+---
+{
+	"accountId" : vars.accountId
+}]]]></http:uri-params>
+		</http:request>
+		<ee:transform doc:name="Convert to array" doc:id="e323c884-2573-46f1-a8d5-371fd3d02049">
+			<ee:message>
+				<ee:set-payload resource="scripts/put-convert-payload-to-array.dwl" />
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Log Response" doc:id="655300f1-7a58-47e7-a442-712a6f93615b" message='#[payload]'/>
+	</flow>
+	<flow name="delete-account-flow" doc:id="e95e4780-f3f8-4fe3-9ba8-2d073747bd2d" >
+		<http:request method="DELETE" doc:name="Accounts-Papi" doc:id="9446194a-5b80-4fc5-a2ca-fb230c3e1b8e" url="${http-request.accounts-papi}/{accountId}" correlationId="vars.cid">
+			<reconnect />
+			<http:headers><![CDATA[#[output application/json
+---
+{
+	"correlationId" : vars.cid,
+	"client_secret" : Mule::p('secure::app.client_secret'),
+	"client_id" : Mule::p('app.client_id')
+	
+}]]]></http:headers>
+			<http:uri-params><![CDATA[#[output application/java
+---
+{
+	"accountId" : vars.accountId
+}]]]></http:uri-params>
+		</http:request>
+		<ee:transform doc:name="Response" doc:id="482191dc-f506-4149-bcdd-b042151391df" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	id: payload.id,
+	status: 0,
+	message: "Account deleted successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Log Response" doc:id="37c28f4b-fe9f-4b91-85da-4423308a1ff8" message='#[payload]'/>
+	</flow>
+</mule>
